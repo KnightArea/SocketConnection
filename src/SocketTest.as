@@ -1,4 +1,4 @@
-package
+﻿package
 {
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -33,15 +33,24 @@ package
 		protected function socketConnected(event:Event):void
 		{
 			trace("Server connected, Packet sending...");
-			socketListener.writeUTF("public struct ResponseType{public string function { get; set; }}");
+			var rr:RequestType = new RequestType();
+			rr.functions = "salam";
+			var tmpStr:String = JSON.stringify(rr);
+			trace(tmpStr)
+			//socketListener.writeUTF("salam");
+			socketListener.writeUTFBytes(tmpStr);
 			//socketListener.flush();
 		}
 		
 		/**Some data received*/
 		protected function socketDataRecevied(event:ProgressEvent):void
 		{
+			var retVal:String = socketListener.readUTFBytes(event.bytesLoaded);
 			//This functin will not call...
-			trace("Server data is : "+socketListener.readUTF());
+			trace("Server data is : "+retVal)
+			
+			var response = JSON.parse(retVal) ;
+			trace(response.functions)
 		}
 	}
 }
