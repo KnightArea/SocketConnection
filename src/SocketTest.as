@@ -6,6 +6,8 @@
 	import flash.events.OutputProgressEvent;
 	import flash.events.ProgressEvent;
 	import flash.net.Socket;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
 	import flash.utils.getTimer;
 	
 	public class SocketTest extends Sprite
@@ -13,7 +15,8 @@
 		
 		private var socketListener:Socket ;
 		
-		private var socketTime:uint ;
+		private var socketTime:uint,
+					httpTime:uint;
 		
 		public function SocketTest()
 		{
@@ -37,6 +40,28 @@
 		{
 			trace("Server connected, Packet sending...");
 			stage.addEventListener(MouseEvent.MOUSE_DOWN,sendSocket);
+			stage.addEventListener(MouseEvent.RIGHT_MOUSE_DOWN,loadAfile);
+			//socketListener.flush();
+		}
+		
+		protected function loadAfile(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+			event.preventDefault();
+			trace("Try to load a file in http");
+			httpTime = getTimer();
+			var loader:URLLoader = new URLLoader();
+			loader.addEventListener(Event.COMPLETE,fileLoaded);
+			loader.load(new URLRequest("https://www.google.com/"));
+		}
+		
+			protected function fileLoaded(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				var loadedString:String = (event.target as URLLoader).data;
+				trace("HTTP data loaded : "+(loadedString.substr(0,Math.min(loadedString.length,10))));
+				trace("And it takes : "+(getTimer()-httpTime));
+			}
 		
 		protected function sendSocket(event:MouseEvent):void
 		{
