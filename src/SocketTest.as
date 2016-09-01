@@ -27,7 +27,7 @@
 			socketListener.addEventListener(OutputProgressEvent.OUTPUT_PROGRESS,socketProggress);
 			socketListener.addEventListener(Event.CONNECT,socketConnected);
 			trace("try to connect to server...");
-			socketListener.connect("185.55.226.102",31001);
+			socketListener.connect("185.55.226.205",31001);
 		}
 		
 		protected function socketProggress(event:OutputProgressEvent):void
