@@ -24,7 +24,7 @@ package socketService
 		public function loadParam(sendData:Object):void
 		{
 			var request:SocketRequestFormat = new SocketRequestFormat(funcName,sendData);
-			sendThisJSON = JSON.stringify(request);
+			sendThisJSON = JSON.stringify(request); 
 			trace("try to connect to server for "+funcName);
 			socketListener.connect(SocketInit.ip,SocketInit.port);
 		}
