@@ -10,6 +10,9 @@
 	import flash.net.URLRequest;
 	import flash.utils.getTimer;
 	
+	import socketService.SocketCaller;
+	import socketService.types.Register_Params;
+	
 	public class SocketTest extends Sprite
 	{
 		
@@ -17,32 +20,44 @@
 		
 		private var socketTime:uint,
 					httpTime:uint;
+
+		private var sock:SocketCaller;
 		
 		public function SocketTest()
 		{
 			super();
 			
+			sock = new SocketCaller();
 			
-			socketListener = new Socket();
+			stage.addEventListener(MouseEvent.MOUSE_DOWN,sendRequestToSocketServer);
+			/*socketListener = new Socket();
 			socketListener.addEventListener(OutputProgressEvent.OUTPUT_PROGRESS,socketProggress);
 			socketListener.addEventListener(Event.CONNECT,socketConnected);
 			trace("try to connect to server...");
-			socketListener.connect("185.55.226.205",31001);
+			socketListener.connect("127.0.0.1",31001);*/
 		}
 		
-		protected function socketProggress(event:OutputProgressEvent):void
+		protected function sendRequestToSocketServer(event:MouseEvent):void
+		{
+			trace("Send the user requset");
+			
+			var registerRequest:Register_Params = new Register_Params();
+			sock.loadParam(registerRequest);
+		}
+		
+		/*protected function socketProggress(event:OutputProgressEvent):void
 		{
 			trace("...Socket progress...");
-		}
+		}*/
 		
-		/**Server connected*/
+		/**Server connected
 		protected function socketConnected(event:Event):void
 		{
 			trace("Server connected, Packet sending...");
 			stage.addEventListener(MouseEvent.MOUSE_DOWN,sendSocket);
 			stage.addEventListener(MouseEvent.RIGHT_MOUSE_DOWN,loadAfile);
 			//socketListener.flush();
-		}
+		}*/
 		
 		protected function loadAfile(event:MouseEvent):void
 		{
