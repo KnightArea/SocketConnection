@@ -1,5 +1,7 @@
 package socketService
 {
+	import com.mteamapp.JSONParser;
+	
 	import flash.events.Event;
 	import flash.events.ProgressEvent;
 	import flash.net.Socket;
@@ -36,15 +38,16 @@ package socketService
 				trace(">>Now send this : "+sendThisJSON);
 				socketListener.writeUTFBytes(sendThisJSON);
 				socketListener.flush();
-				trace("How many bytes are available : "+socketListener.bytesAvailable);
 			}
 			
 				private function socketDataRecevied(e:ProgressEvent):void
 				{
 					trace("<<Socket data is : "+socketListener.bytesAvailable);
+					var catchedData:SocketReceivedFormat = new SocketReceivedFormat();
 					if(socketListener.bytesAvailable>0)
 					{
-						trace("The returned data is : "+socketListener.readUTFBytes(socketListener.bytesAvailable));
+						JSONParser.parse(socketListener.readUTFBytes(socketListener.bytesAvailable),catchedData);
+						trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
 					}
 					else
 					{

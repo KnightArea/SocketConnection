@@ -1,12 +1,12 @@
 package socketService
 {
-	internal class SocketReceiveFormat
+	internal class SocketReceivedFormat
 	{
 		public var retVal:String ;
 		
 		public var state:Boolean ;
 		
-		public function SocketReceiveFormat()
+		public function SocketReceivedFormat()
 		{
 		}
 	}
