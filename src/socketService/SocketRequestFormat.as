@@ -1,16 +1,16 @@
 package socketService
 {
-	public class SocketRequestFormat
+	internal class SocketRequestFormat
 	{
 		/**Pass the function name here*/
-		public var FuncName:String ;
+		public var funcName:String ;
 		
-		public var Params:Object ;
+		public var param:Object ;
 		
 		public function SocketRequestFormat(theFunctionName:String,requestedData:Object)
 		{
-			FuncName = theFunctionName ;
-			Params = requestedData ;
+			funcName = theFunctionName ;
+			param = requestedData ;
 		}
 	}
 }
