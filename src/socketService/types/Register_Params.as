@@ -10,7 +10,7 @@ package socketService.types
 		public var Latitude:String = '0.12321321';
 		public var Longitude:String = '0.12321321';
 		public var TeamColor:String = '3221';
-		public var isGuest:Boolean = true ;
+		public var IsGuest:Boolean = true ;
 		
 		public function Register_Params()
 		{
