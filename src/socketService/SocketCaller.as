@@ -3,6 +3,7 @@ package socketService
 	import com.mteamapp.JSONParser;
 	
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.net.Socket;
 
@@ -22,6 +23,13 @@ package socketService
 			//socketListener.addEventListener(OutputProgressEvent.OUTPUT_PROGRESS,socketProggress);
 			socketListener.addEventListener(ProgressEvent.SOCKET_DATA,socketDataRecevied);
 			socketListener.addEventListener(Event.CONNECT,socketConnected);
+			socketListener.addEventListener(IOErrorEvent.IO_ERROR,noConnectionAvailable);
+		}
+		
+		/**Connection fails*/
+		protected function noConnectionAvailable(event:IOErrorEvent):void
+		{
+			trace("!! The connection fails");
 		}
 		
 		public function loadParam(sendData:Object):void
@@ -46,7 +54,8 @@ package socketService
 					var catchedData:SocketReceivedFormat = new SocketReceivedFormat();
 					if(socketListener.bytesAvailable>0)
 					{
-						JSONParser.parse(socketListener.readUTFBytes(socketListener.bytesAvailable),catchedData);
+						var receivedData:String = socketListener.readUTFBytes(socketListener.bytesAvailable) ;
+						JSONParser.parse(receivedData,catchedData);
 						trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
 					}
 					else
