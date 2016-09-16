@@ -53,10 +53,17 @@ package socketService
 					trace("<<Socket data is : "+socketListener.bytesAvailable);
 					var catchedData:SocketReceivedFormat = new SocketReceivedFormat();
 					if(socketListener.bytesAvailable>0)
-					{
+					{							
 						var receivedData:String = socketListener.readUTFBytes(socketListener.bytesAvailable) ;
-						JSONParser.parse(receivedData,catchedData);
-						trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
+						if(receivedData.indexOf("error")==-1)
+						{
+							JSONParser.parse(receivedData,catchedData);
+							trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
+						}
+						else
+						{
+							trace("error is :: "+receivedData);							
+						}
 					}
 					else
 					{
