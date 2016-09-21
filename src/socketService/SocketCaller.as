@@ -72,7 +72,7 @@ package socketService
 						}
 						catch(e:Error)
 						{
-							trace("The "+receivedData+" is not parsable");
+							trace("The \""+receivedData+"\" is not parsable");
 							this.dispatchEvent(new Event(Event.UNLOAD));
 							return;
 						}
