@@ -23,13 +23,26 @@
 
 		private var sock:SocketCaller;
 		
+		private var sampleData:Object ;
+		
+		private var urlLoader:URLLoader ;
+		
 		public function SocketTest()
 		{
 			super();
 			
 			sock = new SocketCaller();
 			
+			urlLoader = new URLLoader(new URLRequest("MOCK_DATA.json"));
+			urlLoader.addEventListener(Event.COMPLETE,dataLoaded);
+			
 			stage.addEventListener(MouseEvent.MOUSE_DOWN,sendRequestToSocketServer);
+		}
+		
+		protected function dataLoaded(event:Event):void
+		{
+			sampleData = JSON.parse(urlLoader.data as String);
+			trace("Sample datas are loaded : "+(sampleData as Array).length);
 		}
 		
 		protected function sendRequestToSocketServer(event:MouseEvent):void
