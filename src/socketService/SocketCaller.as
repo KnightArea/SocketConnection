@@ -9,9 +9,9 @@
 	import flash.net.Socket;
 
 	/**Server connected and receveid data is ready to use*/
-	[Event(name="connect", type="flash.events.Event")]
+	[Event(name="complete", type="flash.events.Event")]
 	/**Connection error*/
-	[Event(name="io_error", type="flash.events.IOErrorEvent")]
+	[Event(name="error", type="flash.events.ErrorEvent")]
 	/**Server connected but the input data was wrong*/
 	[Event(name="unload", type="flash.events.Event")]
 	public class SocketCaller extends EventDispatcher
@@ -55,6 +55,7 @@
 			private function socketConnected(e:Event):void
 			{
 				trace(">>Now send this : "+sendThisJSON);
+				this.dispatchEvent(new Event(Event.CONNECT));
 				socketListener.writeUTFBytes(sendThisJSON);
 				socketListener.flush();
 			}
@@ -69,7 +70,6 @@
 						if(receivedData.indexOf("error")==-1)
 						{
 							JSONParser.parse(receivedData,catchedData);
-							trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
 						}
 						else
 						{
@@ -97,8 +97,8 @@
 						this.dispatchEvent(new Event(Event.UNLOAD));
 						return;
 					}
-					this.dispatchEvent(new Event(Event.CONNECT));
 					socketListener.close();
+					this.dispatchEvent(new Event(Event.COMPLETE));
 				}
 	}
 }
