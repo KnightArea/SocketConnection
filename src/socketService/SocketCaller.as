@@ -38,6 +38,9 @@
 					private var request:SocketRequestFormat;
 
 					private var timeOutId:uint;
+
+		/**This is the returned value from this service*/
+		public var catchedData:SocketReceivedFormat;
 		
 		public function SocketCaller(theFunctionName:String,offlineDataIsOK_v:Boolean=false,justLoadOffline_v:Boolean=false,maxAvailableDateForOffline_v:Date=null)
 		{
@@ -73,6 +76,8 @@
 		public function loadParam(sendData:Object):void
 		{
 			cansel();
+			
+			catchedData = null ;
 			
 			socketListener.addEventListener(ProgressEvent.SOCKET_DATA,socketDataRecevied);
 			socketListener.addEventListener(Event.CONNECT,socketConnected);
@@ -134,7 +139,7 @@
 				private function socketDataRecevied(e:ProgressEvent,myAbsolutData:String=null):void
 				{
 					var receivedData:String ;
-					var catchedData:SocketReceivedFormat = new SocketReceivedFormat();
+					catchedData = new SocketReceivedFormat();
 					if(myAbsolutData==null)
 					{
 						trace("<<Socket data is : "+socketListener.bytesAvailable);
