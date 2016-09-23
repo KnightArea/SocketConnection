@@ -39,7 +39,7 @@
 
 					private var timeOutId:uint;
 		
-		public function SocketCaller(theFunctionName:String="Register",offlineDataIsOK_v:Boolean=false,justLoadOffline_v:Boolean=false,maxAvailableDateForOffline_v:Date=null)
+		public function SocketCaller(theFunctionName:String,offlineDataIsOK_v:Boolean=false,justLoadOffline_v:Boolean=false,maxAvailableDateForOffline_v:Date=null)
 		{
 			funcName = theFunctionName ;
 			offlineDataIsOK = offlineDataIsOK_v ;

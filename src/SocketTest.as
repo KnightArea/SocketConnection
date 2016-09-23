@@ -9,6 +9,7 @@
 	import flash.utils.getTimer;
 	
 	import socketService.SocketCaller;
+	import socketService.services.Register;
 	import socketService.types.Register_Params;
 	
 	public class SocketTest extends Sprite
@@ -19,7 +20,7 @@
 		private var socketTime:uint,
 					httpTime:uint;
 
-		private var sock:SocketCaller;
+		private var sock:Register;
 		
 		private var sampleData:Array ;
 		
@@ -33,7 +34,7 @@
 		{
 			super();
 			
-			sock = new SocketCaller();
+			sock = new Register();
 			sock.addEventListener(Event.COMPLETE,next);
 			
 			urlLoader = new URLLoader(new URLRequest("MOCK_DATA.json"));
@@ -61,7 +62,7 @@
 			var registerRequest:Register_Params = new Register_Params();
 			registerRequest.Latitude = sampleData[mockIndex].Latitude ;
 			registerRequest.Longitude = sampleData[mockIndex].Longitude ;
-			sock.loadParam(registerRequest);
+			sock.load(registerRequest);
 		}		
 		
 		protected function next(event:Event):void
