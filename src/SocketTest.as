@@ -1,6 +1,7 @@
 ﻿package
 {
 	import flash.display.Sprite;
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.net.Socket;
@@ -10,7 +11,9 @@
 	
 	import socketService.SocketCaller;
 	import socketService.services.Register;
+	import socketService.services.UpdateUserInformation;
 	import socketService.types.Register_Params;
+	import socketService.types.UpdateUserInformation_Params;
 	
 	public class SocketTest extends Sprite
 	{
@@ -28,6 +31,7 @@
 		
 		/**The mockIndex starts from the maximom*/
 		private var mockIndex:int ;
+		
 		private var tim:int;
 		
 		public function SocketTest()
@@ -46,7 +50,7 @@
 		protected function dataLoaded(event:Event):void
 		{
 			sampleData = JSON.parse(urlLoader.data as String) as Array;
-			mockIndex = (sampleData as Array).length-1 ;
+			mockIndex = 0 ;(sampleData as Array).length-1 ;
 			trace("Sample datas are loaded : "+(sampleData as Array).length);
 		}
 		
@@ -74,8 +78,38 @@
 			}
 			else
 			{
-				throw "You saved "+sampleData.length+" datas to the database in "+(getTimer()-tim)+" miliseconds";
+				trace("You saved "+sampleData.length+" datas to the database in "+(getTimer()-tim)+" miliseconds");
+				trace("The registered user id is : "+sock.catchedData.retVal);
+				
+				var completeReg:UpdateUserInformation = new UpdateUserInformation();
+				var userParam:UpdateUserInformation_Params = new UpdateUserInformation_Params();
+				userParam.EmailAdress = "ebrahimsepehr@gmail.com";
+				userParam.ID = sock.catchedData.retVal;
+				userParam.Name = "MohammadEbrahim";
+				userParam.PhoneNumber = "09127785180";
+				userParam.TeamColor = "#ff0000";
+				userParam.TeamTitle = "BestOne";
+				completeReg.addEventListener(Event.COMPLETE,registerCompleted);
+				completeReg.addEventListener(ErrorEvent.ERROR,ServerErrorRecieved);
+				completeReg.addEventListener(Event.UNLOAD,noInternet);
+				
+				completeReg.load(userParam);
 			}
+		}
+		
+		protected function noInternet(event:Event):void
+		{
+			trace("No internet connection");
+		}
+		
+		protected function ServerErrorRecieved(event:ErrorEvent):void
+		{
+			trace("Server Error recevived");
+		}
+		
+		protected function registerCompleted(event:Event):void
+		{
+			trace("Registration is complete");
 		}
 		
 	}
