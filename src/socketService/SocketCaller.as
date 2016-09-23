@@ -1,4 +1,4 @@
-package socketService
+﻿package socketService
 {
 	import com.mteamapp.JSONParser;
 	
@@ -66,7 +66,6 @@ package socketService
 					if(socketListener.bytesAvailable>0)
 					{							
 						var receivedData:String = socketListener.readUTFBytes(socketListener.bytesAvailable) ;
-<<<<<<< HEAD
 						if(receivedData.indexOf("error")==-1)
 						{
 							JSONParser.parse(receivedData,catchedData);
@@ -75,21 +74,21 @@ package socketService
 						else
 						{
 							trace("error is :: "+receivedData);							
-=======
-						try
-						{
-							JSONParser.parse(receivedData,catchedData);
-						}
-						catch(e:Error)
-						{
-							trace("The \""+receivedData+"\" is not parsable");
-							this.dispatchEvent(new Event(Event.UNLOAD));
-							return;
+							try
+							{
+								JSONParser.parse(receivedData,catchedData);
+							}
+							catch(e:Error)
+							{
+								trace("The \""+receivedData+"\" is not parsable");
+								this.dispatchEvent(new Event(Event.UNLOAD));
+								return;
+							}
 						}
 						if(debug)
 						{
 							trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
->>>>>>> 5137ec741f55f359cdd8905cc2f7781b3e687939
+
 						}
 					}
 					else
