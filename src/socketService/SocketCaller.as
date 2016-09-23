@@ -3,17 +3,27 @@ package socketService
 	import com.mteamapp.JSONParser;
 	
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.net.Socket;
 
-	public class SocketCaller
+	/**Server connected and receveid data is ready to use*/
+	[Event(name="connect", type="flash.events.Event")]
+	/**Connection error*/
+	[Event(name="io_error", type="flash.events.IOErrorEvent")]
+	/**Server connected but the input data was wrong*/
+	[Event(name="unload", type="flash.events.Event")]
+	public class SocketCaller extends EventDispatcher
 	{
 		private var funcName:String ;
 		
 		private var socketListener:Socket ;
 		
 		private var sendThisJSON:String ;
+		
+		/**This will make jsons to pars again for debugging*/
+		private const debug:Boolean = true ;
 		
 		public function SocketCaller(theFunctionName:String="Register")
 		{
@@ -30,6 +40,7 @@ package socketService
 		protected function noConnectionAvailable(event:IOErrorEvent):void
 		{
 			trace("!! The connection fails");
+			this.dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
 		}
 		
 		public function loadParam(sendData:Object):void
@@ -55,6 +66,7 @@ package socketService
 					if(socketListener.bytesAvailable>0)
 					{							
 						var receivedData:String = socketListener.readUTFBytes(socketListener.bytesAvailable) ;
+<<<<<<< HEAD
 						if(receivedData.indexOf("error")==-1)
 						{
 							JSONParser.parse(receivedData,catchedData);
@@ -63,12 +75,30 @@ package socketService
 						else
 						{
 							trace("error is :: "+receivedData);							
+=======
+						try
+						{
+							JSONParser.parse(receivedData,catchedData);
+						}
+						catch(e:Error)
+						{
+							trace("The \""+receivedData+"\" is not parsable");
+							this.dispatchEvent(new Event(Event.UNLOAD));
+							return;
+						}
+						if(debug)
+						{
+							trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
+>>>>>>> 5137ec741f55f359cdd8905cc2f7781b3e687939
 						}
 					}
 					else
 					{
 						trace("!!! there is no data on the socket !!!");
+						this.dispatchEvent(new Event(Event.UNLOAD));
+						return;
 					}
+					this.dispatchEvent(new Event(Event.CONNECT));
 					socketListener.close();
 				}
 	}
