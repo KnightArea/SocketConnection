@@ -2,6 +2,7 @@
 {
 	import com.mteamapp.JSONParser;
 	
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
@@ -10,9 +11,9 @@
 
 	/**Server connected and receveid data is ready to use*/
 	[Event(name="complete", type="flash.events.Event")]
-	/**Connection error*/
-	[Event(name="error", type="flash.events.ErrorEvent")]
 	/**Server connected but the input data was wrong*/
+	[Event(name="error", type="flash.events.ErrorEvent")]
+	/**Server is not connected*/
 	[Event(name="unload", type="flash.events.Event")]
 	public class SocketCaller extends EventDispatcher
 	{
@@ -40,7 +41,7 @@
 		protected function noConnectionAvailable(event:IOErrorEvent):void
 		{
 			trace("!! The connection fails");
-			this.dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
+			this.dispatchEvent(new Event(Event.UNLOAD));
 		}
 		
 		public function loadParam(sendData:Object):void
@@ -74,27 +75,18 @@
 						else
 						{
 							trace("error is :: "+receivedData);							
-							try
-							{
-								JSONParser.parse(receivedData,catchedData);
-							}
-							catch(e:Error)
-							{
-								trace("The \""+receivedData+"\" is not parsable");
-								this.dispatchEvent(new Event(Event.UNLOAD));
-								return;
-							}
+							this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR)));
+							return ;
 						}
 						if(debug)
 						{
 							trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
-
 						}
 					}
 					else
 					{
-						trace("!!! there is no data on the socket !!!");
-						this.dispatchEvent(new Event(Event.UNLOAD));
+						trace("!!! there is no data on the socket !!!");	
+						this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR)));
 						return;
 					}
 					socketListener.close();
