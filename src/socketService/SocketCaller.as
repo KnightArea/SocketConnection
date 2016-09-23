@@ -8,6 +8,8 @@
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.net.Socket;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 
 	/**Server connected and receveid data is ready to use*/
 	[Event(name="complete", type="flash.events.Event")]
@@ -15,6 +17,8 @@
 	[Event(name="error", type="flash.events.ErrorEvent")]
 	/**Server is not connected*/
 	[Event(name="unload", type="flash.events.Event")]
+	/**Server data is changed*/
+	[Event(name="change", type="flash.events.Event")]
 	public class SocketCaller extends EventDispatcher
 	{
 		private var funcName:String ;
@@ -26,15 +30,24 @@
 		/**This will make jsons to pars again for debugging*/
 		private const debug:Boolean = true ;
 		
-		public function SocketCaller(theFunctionName:String="Register")
+		private var offlineDataIsOK:Boolean,
+					justLoadOffline:Boolean,
+					maxAvailableDateForOffline:Date;
+					private var dataSentOnce:Boolean;
+
+					private var request:SocketRequestFormat;
+
+					private var timeOutId:uint;
+		
+		public function SocketCaller(theFunctionName:String="Register",offlineDataIsOK_v:Boolean=false,justLoadOffline_v:Boolean=false,maxAvailableDateForOffline_v:Date=null)
 		{
 			funcName = theFunctionName ;
+			offlineDataIsOK = offlineDataIsOK_v ;
+			justLoadOffline = justLoadOffline_v ;
+			maxAvailableDateForOffline = maxAvailableDateForOffline_v;
 			
 			socketListener = new Socket();
 			//socketListener.addEventListener(OutputProgressEvent.OUTPUT_PROGRESS,socketProggress);
-			socketListener.addEventListener(ProgressEvent.SOCKET_DATA,socketDataRecevied);
-			socketListener.addEventListener(Event.CONNECT,socketConnected);
-			socketListener.addEventListener(IOErrorEvent.IO_ERROR,noConnectionAvailable);
 		}
 		
 		/**Connection fails*/
@@ -44,12 +57,68 @@
 			this.dispatchEvent(new Event(Event.UNLOAD));
 		}
 		
+		/**Reload the request*/
+		public function reLoad(delay:uint=20000):void
+		{
+			if(delay==0)
+			{
+				loadParam(request.Params);
+			}
+			else
+			{
+				timeOutId = setTimeout(loadParam,delay,request.Params);
+			}
+		}
+		
 		public function loadParam(sendData:Object):void
 		{
-			var request:SocketRequestFormat = new SocketRequestFormat(funcName,sendData);
+			cansel();
+			
+			socketListener.addEventListener(ProgressEvent.SOCKET_DATA,socketDataRecevied);
+			socketListener.addEventListener(Event.CONNECT,socketConnected);
+			socketListener.addEventListener(IOErrorEvent.IO_ERROR,noConnectionAvailable);
+			
+			dataSentOnce = false ;
+			request = new SocketRequestFormat(funcName,sendData);
 			sendThisJSON = JSON.stringify(request); 
+			
+			if(offlineDataIsOK && justLoadOffline)
+			{
+				var oldData:String = SocketServiceSaver.load(funcName,sendThisJSON);
+				if(oldData!=null)
+				{
+					socketDataRecevied(null,oldData);
+					if(maxAvailableDateForOffline==null && SocketServiceSaver.isExpired(funcName,sendThisJSON,maxAvailableDateForOffline))
+					{
+						trace("The offlie data dispatched but still need to get the new version of data from server");
+					}
+					else
+					{
+						trace("The dispached data is updated");
+						return ;
+					}
+				}
+			}
+			
 			trace("try to connect to server for "+funcName);
 			socketListener.connect(SocketInit.ip,SocketInit.port);
+		}
+		
+		/**Cansel the connection*/
+		private function cansel():void
+		{
+			clearTimeout(timeOutId);
+			socketListener.removeEventListener(ProgressEvent.SOCKET_DATA,socketDataRecevied);
+			socketListener.removeEventListener(Event.CONNECT,socketConnected);
+			socketListener.removeEventListener(IOErrorEvent.IO_ERROR,noConnectionAvailable);
+			try
+			{
+				socketListener.close();
+			}
+			catch(e:Error)
+			{
+				//SocketListner.close error
+			}
 		}
 		
 			/**Socket connection is connected*/
@@ -61,36 +130,70 @@
 				socketListener.flush();
 			}
 			
-				private function socketDataRecevied(e:ProgressEvent):void
+			/**Dispatch error from server or cashed dat*/
+				private function socketDataRecevied(e:ProgressEvent,myAbsolutData:String=null):void
 				{
-					trace("<<Socket data is : "+socketListener.bytesAvailable);
+					var receivedData:String ;
 					var catchedData:SocketReceivedFormat = new SocketReceivedFormat();
-					if(socketListener.bytesAvailable>0)
-					{							
-						var receivedData:String = socketListener.readUTFBytes(socketListener.bytesAvailable) ;
-						if(receivedData.indexOf("error")==-1)
-						{
-							JSONParser.parse(receivedData,catchedData);
+					if(myAbsolutData==null)
+					{
+						trace("<<Socket data is : "+socketListener.bytesAvailable);
+						if(socketListener.bytesAvailable>0)
+						{							
+							receivedData = socketListener.readUTFBytes(socketListener.bytesAvailable);
 						}
 						else
 						{
-							trace("error is :: "+receivedData);							
-							this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR)));
-							return ;
-						}
-						if(debug)
-						{
-							trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
+							trace("!!! there is no data on the socket !!!");	
+							this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+							return;
 						}
 					}
 					else
 					{
-						trace("!!! there is no data on the socket !!!");	
-						this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR)));
-						return;
+						receivedData = myAbsolutData ;
 					}
+					
+					if(receivedData.indexOf("error")==-1)
+					{
+						try
+						{
+							JSONParser.parse(receivedData,catchedData);
+						}
+						catch(e:Error)
+						{
+							trace("The server data is not parsable");
+							this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+							return ;
+						}
+					}
+					else
+					{
+						trace("error is :: "+receivedData);							
+						this.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+						return ;
+					}
+					
+					if(offlineDataIsOK && myAbsolutData==null)
+					{
+						SocketServiceSaver.save(funcName,sendThisJSON,receivedData);
+					}
+					
+					if(debug)
+					{
+						trace("The returned data is : "+JSON.stringify(catchedData,null,' '));
+					}
+					var dataWasSentOnce:Boolean = dataSentOnce ;
 					socketListener.close();
-					this.dispatchEvent(new Event(Event.COMPLETE));
+					dataSentOnce = true ;
+					if(dataWasSentOnce)
+					{
+						this.dispatchEvent(new Event(Event.CHANGE));
+					}
+					else
+					{
+						this.dispatchEvent(new Event(Event.COMPLETE));
+					}
 				}
 	}
 }
